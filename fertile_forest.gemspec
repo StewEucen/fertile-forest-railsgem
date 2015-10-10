@@ -14,12 +14,12 @@ Gem::Specification.new do |s|
   s.description = 'Fertile Forest is the new model to store hierarchical data in a database. Conventional models are "adjacency list", "route enumeration", "nested set" and "closure table". Fertile Forest has some excellent features than each conventional model.'
   s.license     = "MIT"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.rdoc"]
 
-  s.required_ruby_version = ">= 2.0"
+  s.required_ruby_version = ">= 2.1.5"
 
   ### s.add_dependency "rails"###, "~> 4.2.1"
-  s.add_dependency "rails", ">= 4.0"
+  s.add_dependency "rails", ">= 4.2"
 
   ###s.add_development_dependency "sqlite3"
 
