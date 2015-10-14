@@ -56,7 +56,7 @@ Migrate file as single wood style:
 ```ruby
 class CreateSingleWoods < ActiveRecord::Migration
   def change
-    create_table :clusters do |t|
+    create_table :single_woods do |t|
       t.integer :ff_depth, null: false
       t.integer :ff_queue, null: false
       t.string :title
@@ -64,8 +64,8 @@ class CreateSingleWoods < ActiveRecord::Migration
       t.timestamps null: false
     end
 
-    add_index :clusters, [:ff_queue           ], :name => 'ff_queue_index'
-    add_index :clusters, [:ff_depth, :ff_queue], :name => 'ff_depth_index'
+    add_index :single_woods, [:ff_queue           ], :name => 'ff_queue_index'
+    add_index :single_woods, [:ff_depth, :ff_queue], :name => 'ff_depth_index'
   end
 end
 ```
@@ -74,7 +74,7 @@ Migrate file as multiple wood style:
 ```ruby
 class CreateMultipleWoods < ActiveRecord::Migration
   def change
-    create_table :categories do |t|
+    create_table :multiple_woods do |t|
       t.integer :ff_grove, null: false
       t.integer :ff_depth, null: false
       t.integer :ff_queue, null: false
@@ -83,8 +83,8 @@ class CreateMultipleWoods < ActiveRecord::Migration
       t.timestamps null: false
     end
 
-    add_index :categories, [:ff_grove, :ff_queue           ], :name => 'ff_queue_index'
-    add_index :categories, [:ff_grove, :ff_depth, :ff_queue], :name => 'ff_depth_index'
+    add_index :multiple_woods, [:ff_grove, :ff_queue           ], :name => 'ff_queue_index'
+    add_index :multiple_woods, [:ff_grove, :ff_depth, :ff_queue], :name => 'ff_depth_index'
   end
 end
 ```
