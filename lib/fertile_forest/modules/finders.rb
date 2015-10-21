@@ -293,6 +293,72 @@ module StewEucen
           end
 
           #
+          # Find any kind of kinship from base node.
+          #
+          # @param base_obj [Entity|Integer] Base node|id to find.
+          # @param next_branch [Integer] Branch distance of finding nodes from base nodes.
+          # @param level_offset [Integer] Offset of kinship level of finding nodes from base nodes.
+          # @param columns [Array] Columns for SELECT clause.
+          # @return [ActiveRecord::Relation] Basic query for finding kinship nodes.
+          # @return [nil] No kinship nodes.
+          # @since 1.1.0
+          #
+          def kinships(
+            base_obj,
+            next_branch = KINSHIPS_AS_SIBLING,
+            level_offset = KINSHIPS_SAME_LEVEL,
+            columns = nil
+          )
+            base_node = ff_resolve_nodes(base_obj)
+            return nil if base_node.blank?
+
+            aim_queue = base_node.ff_queue
+            aim_depth = base_node.ff_depth
+            aim_grove = base_node.ff_grove  # When no grove, nil
+
+            top_depth = aim_depth - next_branch
+
+            # Impossible to find.
+            return nil if top_depth < ROOT_DEPTH
+
+            ffqq = arel_table[@_ff_queue]
+            ffdd = arel_table[@_ff_depth]
+            ffgg = arel_table[@_ff_grove]
+
+            # create subquery
+            before_nodes_subquery = ff_usual_projection(aim_grove)
+                .project(ffqq.maximum.to_sql + " + 1 AS head_queue")
+                .where(ffqq.lt(aim_queue))
+                .where(ffdd.lt(top_depth))
+
+            after_nodes_subquery = ff_usual_projection(aim_grove)
+                .project(ffqq.minimum.to_sql + " - 1 AS tail_queue")
+                .where(ffqq.gt(aim_queue))
+                .where(ffdd.lt(top_depth))
+
+            func_maker = Arel::Nodes::NamedFunction
+
+            before_coalesce_condition = func_maker.new(
+                'COALESCE',
+                [before_nodes_subquery, 0]
+            )
+
+            after_coalesce_condition = func_maker.new(
+                'COALESCE',
+                [after_nodes_subquery, QUEUE_MAX_VALUE]
+            )
+
+            # find nodes by ancestor queues
+            ff_required_columns_scope()
+                .ff_usual_conditions_scope(aim_grove)
+                .ff_usual_order_scope()
+                .where(ffdd.eq(aim_depth + level_offset))
+                .where(ffqq.gteq(before_coalesce_condition))
+                .where(ffqq.lteq(after_coalesce_condition))
+                .select(ff_all_optional_columns(columns))
+          end
+
+          #
           # Find sibling nodes from base node.
           #
           # @param base_obj [Entity|Integer] Base node|id to find.

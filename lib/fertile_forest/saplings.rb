@@ -37,11 +37,18 @@ module StewEucen
       DESCENDANTS_ALL        = 0
       DESCENDANTS_ONLY_CHILD = 1
 
-      PRUNE_DESCENDANTS_ONLY = false
-      PRUNE_WITH_TOP_NODE    = true
-
       SUBTREE_WITHOUT_TOP_NODE = false
       SUBTREE_WITH_TOP_NODE    = true
+
+      KINSHIPS_AS_SIBLING = 0   # Distance for finding sibling nodes In kinships().
+      KINSHIPS_AS_COUSIN  = 1   # Distance for finding cousin nodes In kinships().
+
+      KINSHIPS_SAME_LEVEL   = 0   # Same level to find kinships. (such as siblings, cousins.)
+      KINSHIPS_PARENT_LEVEL = -1  # Upper level to find kinships. (such as aunts|uncles)
+      KINSHIPS_CHILD_LEVEL  = 1   # Lower level to find kinships. (such as niblings.)
+
+      PRUNE_DESCENDANTS_ONLY = false
+      PRUNE_WITH_TOP_NODE    = true
 
       ORDER_BY_QUEUE_INDEX = false
       ORDER_BY_DEPTH_INDEX = true
