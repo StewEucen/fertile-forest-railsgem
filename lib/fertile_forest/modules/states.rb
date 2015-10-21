@@ -25,7 +25,7 @@ module StewEucen
 
             # get id hash by nested information
             eldest_node = sibling_nodes.values.first
-            full_sibling_nodes = siblings_of(eldest_node, [@_id]).all
+            full_sibling_nodes = siblings(eldest_node, [@_id]).all
 
             child_hash = {}
             bingo_count = sibling_nodes.length

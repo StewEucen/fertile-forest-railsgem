@@ -444,7 +444,7 @@ module StewEucen
               aim_node = ff_resolve_nodes(node_obj)
               return false if aim_node.blank?
 
-              siblings_query = siblings_of(aim_node, [@_id])
+              siblings_query = siblings(aim_node, [@_id])
               return false if siblings_query.blank?
               sibling_nodes = siblings_query.all
 
