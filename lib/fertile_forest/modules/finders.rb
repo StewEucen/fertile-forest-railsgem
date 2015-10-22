@@ -360,15 +360,55 @@ module StewEucen
 
           #
           # Find sibling nodes from base node.
+          # Note: Results includes base node.
           #
           # @param base_obj [Entity|Integer] Base node|id to find.
           # @param columns [Array] Columns for SELECT clause.
           # @return [ActiveRecord::Relation] Basic query for finding sibling nodes.
           # @return [nil] No sibling nodes.
+          # @version 1.1.0 Replace to use kinships()
           #
           def siblings(base_obj, columns = nil)
-            parent_node = genitor(base_obj)
-            children(parent_node, columns)
+            kinships(base_obj, KINSHIPS_AS_SIBLING, KINSHIPS_SAME_LEVEL, columns)
+          end
+
+          #
+          # Find cousin nodes from base node.
+          # Note: Results includes siblngs nodes.
+          #
+          # @param base_obj [Entity|Integer] Base node|id to find.
+          # @param columns [Array] Columns for SELECT clause.
+          # @return [ActiveRecord::Relation] Basic query for finding cousin nodes.
+          # @return [nil] No cousin nodes.
+          # @since 1.1.0
+          def cousins(base_obj, columns = nil)
+            kinships(base_obj, KINSHIPS_AS_COUSIN, KINSHIPS_SAME_LEVEL, columns)
+          end
+
+          #
+          # Find aunt|uncle nodes from base node.
+          # Note: Results includes siblngs nodes.
+          # @param base_obj [Entity|Integer] Base node|id to find.
+          # @param columns [Array] Columns for SELECT clause.
+          # @return [ActiveRecord::Relation] Basic query for finding aunt|uncle nodes.
+          # @return [nil] No aunt|uncle nodes.
+          # @since 1.1.0
+          #
+          def piblings(base_obj, columns = nil)
+            kinships(base_obj, KINSHIPS_AS_COUSIN, KINSHIPS_PARENT_LEVEL, columns)
+          end
+
+          #
+          # Find nibling nodes from base node.
+          # Note: Results includes siblngs nodes.
+          # @param base_obj [Entity|Integer] Base node|id to find.
+          # @param columns [Array] Columns for SELECT clause.
+          # @return [ActiveRecord::Relation] Basic query for finding nibling nodes.
+          # @return [nil] No nibling nodes.
+          # @since 1.1.0
+          #
+          def niblings(base_obj, columns = nil)
+            kinships(base_obj, KINSHIPS_AS_SIBLING, KINSHIPS_CHILD_LEVEL, columns)
           end
 
           #
@@ -795,6 +835,18 @@ module StewEucen
                     :ff_queue_sorted_nodes,
 
                     :ff_sort_with_queue!
+
+          alias superiors  ancestors
+          alias forebears  ancestors
+          alias inferiors  descendants
+          alias afterbears descendants
+          alias externals leaves
+          alias terminals leaves
+          alias nephews niblings
+          alias nieces  niblings
+          alias auncles piblings
+          alias aunts   piblings
+          alias uncles  piblings
         end
       end
     end
