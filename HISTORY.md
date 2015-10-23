@@ -1,3 +1,7 @@
+# v1.1.1
+
+Add Entity methdos to wrap new Table methods.
+
 # v1.1.0
 
 Add four new methods to find.
