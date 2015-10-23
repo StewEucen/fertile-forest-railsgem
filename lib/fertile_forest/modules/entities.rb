@@ -188,6 +188,7 @@ module StewEucen
           self.class.grandchildren(self, columns)
         end
 
+        # @since 1.1.0
         def kinships(
           next_branch = KINSHIPS_AS_SIBLING,
           level_offset = KINSHIPS_SAME_LEVEL,
@@ -200,14 +201,17 @@ module StewEucen
           self.class.siblings(self, columns)
         end
 
+        # @since 1.1.0
         def cousins(columns = nil)
           self.class.cousins(self, columns)
         end
 
+        # @since 1.1.0
         def niblings(columns = nil)
           self.class.niblings(self, columns)
         end
 
+        # @since 1.1.0
         def piblings(columns = nil)
           self.class.piblings(self, columns)
         end
