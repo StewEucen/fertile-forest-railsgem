@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.email       = ["stew.eucen@gmail.com"]
   s.homepage    = 'http://lab.kochlein.com/FertileForest'
   s.summary     = 'The new model to store hierarchical data in a database.'
-  s.description = 'Fertile Forest is the new model to store hierarchical data in a database. Conventional models are "adjacency list", "route enumeration", "nested set" and "closure table". Fertile Forest has some excellent features than each conventional model.'
+  s.description = 'Fertile Forest is the new model to store hierarchical data in a database. Conventional models are "adjacency list", "path enumeration", "nested set" and "closure table". Fertile Forest has some excellent features than each conventional model.'
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.rdoc"]
