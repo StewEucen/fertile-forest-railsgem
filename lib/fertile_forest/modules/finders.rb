@@ -146,6 +146,67 @@ module StewEucen
             trunk_query.first
           end
 
+          #
+          # Find cenancestor nodes of given nodes from base node.
+          #
+          # @param objects [Array] Array of base nodes|ids to find.
+          # @param columns [Array] Columns for SELECT clause.
+          # @return [Entity] Grandparent node.
+          # @return [nil] No grandparent node.
+          # @since 1.2.0
+          def cenancestors(objects, columns = nil)
+            base_nodes = ff_resolve_nodes(objects)
+            return nil if base_nodes.blank?
+
+            entities = base_nodes.values
+
+            # if bases include null, can not find.
+            return nil if entities.include? nil
+
+            # check same grove.
+            if has_grove?
+              groves = entities.map {|n| n.ff_grove }
+              return nil if groves.min != groves.max
+            end
+
+            eldist_node = entities.first;
+            aim_grove = eldist_node.ff_grove  # When no grove, nil
+
+            ffqq = arel_table[@_ff_queue]
+            ffdd = arel_table[@_ff_depth]
+            ffgg = arel_table[@_ff_grove]
+
+            queues = entities.map {|n| n.ff_queue }
+            head_queue = queues.min
+            tail_queue = queues.max
+
+            # create subquery to find top-depth in range of head-tail.
+            top_depth_subquery = ff_usual_projection(aim_grove)
+                .project(ffdd.minimum.as('top_depth'))
+                .where(ffqq.gteq(head_queue))
+                .where(ffqq.lteq(tail_queue))
+
+            # create subquery to find queues of ancestors.
+            aim_group = [ffdd]
+            aim_group.unshift(ffgg) if has_grove?
+
+            cenancestor_nodes_subquery = ff_usual_projection(aim_grove)
+                .project(ffqq.maximum.as('ancestor_queue'))
+                .where(ffqq.lt(head_queue))
+                .where(ffdd.lt(top_depth_subquery))
+                .group(aim_group)
+
+            # find nodes by ancestor queues
+            # must use IN(), because trunk() is for general purpose to find ancestors
+            # When one row, can use "=". When plural, can not use "=".
+            # Error: SQLSTATE[21000]: Cardinality violation: 1242 Subquery returns more than 1 row
+            ff_required_columns_scope()
+                .ff_usual_conditions_scope(aim_grove)
+                .ff_usual_order_scope()
+                .where(ffqq.in(cenancestor_nodes_subquery))
+                .select(ff_all_optional_columns(columns))
+          end
+
           ######################################################################
 
           #

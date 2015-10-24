@@ -1,3 +1,7 @@
+# v1.2.0
+
+Add cenancestors().
+
 # v1.1.1
 
 Add Entity methdos to wrap new Table methods.
