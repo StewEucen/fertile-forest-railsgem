@@ -357,8 +357,8 @@ module StewEucen
           # Find any kind of kinship from base node.
           #
           # @param base_obj [Entity|Integer] Base node|id to find.
-          # @param next_branch [Integer] Branch distance of finding nodes from base nodes.
-          # @param level_offset [Integer] Offset of kinship level of finding nodes from base nodes.
+          # @param branch_level [Integer] Branch distance of finding nodes from base nodes.
+          # @param depth_offset [Integer] Offset of kinship level of finding nodes from base nodes.
           # @param columns [Array] Columns for SELECT clause.
           # @return [ActiveRecord::Relation] Basic query for finding kinship nodes.
           # @return [nil] No kinship nodes.
@@ -366,8 +366,8 @@ module StewEucen
           #
           def kinships(
             base_obj,
-            next_branch = KINSHIPS_AS_SIBLING,
-            level_offset = KINSHIPS_SAME_LEVEL,
+            branch_level = KINSHIPS_BRANCH_LEVEL_ONE,
+            depth_offset = KINSHIPS_SAME_DEPTH,
             columns = nil
           )
             base_node = ff_resolve_nodes(base_obj)
@@ -377,7 +377,7 @@ module StewEucen
             aim_depth = base_node.ff_depth
             aim_grove = base_node.ff_grove  # When no grove, nil
 
-            top_depth = aim_depth - next_branch
+            top_depth = aim_depth - branch_level
 
             # Impossible to find.
             return nil if top_depth < ROOT_DEPTH
@@ -390,12 +390,12 @@ module StewEucen
             before_nodes_subquery = ff_usual_projection(aim_grove)
                 .project(ffqq.maximum.to_sql + " + 1 AS head_queue")
                 .where(ffqq.lt(aim_queue))
-                .where(ffdd.lt(top_depth))
+                .where(ffdd.lteq(top_depth))
 
             after_nodes_subquery = ff_usual_projection(aim_grove)
                 .project(ffqq.minimum.to_sql + " - 1 AS tail_queue")
                 .where(ffqq.gt(aim_queue))
-                .where(ffdd.lt(top_depth))
+                .where(ffdd.lteq(top_depth))
 
             func_maker = Arel::Nodes::NamedFunction
 
@@ -413,7 +413,7 @@ module StewEucen
             ff_required_columns_scope()
                 .ff_usual_conditions_scope(aim_grove)
                 .ff_usual_order_scope()
-                .where(ffdd.eq(aim_depth + level_offset))
+                .where(ffdd.eq(aim_depth + depth_offset))
                 .where(ffqq.gteq(before_coalesce_condition))
                 .where(ffqq.lteq(after_coalesce_condition))
                 .select(ff_all_optional_columns(columns))
@@ -430,7 +430,7 @@ module StewEucen
           # @version 1.1.0 Replace to use kinships()
           #
           def siblings(base_obj, columns = nil)
-            kinships(base_obj, KINSHIPS_AS_SIBLING, KINSHIPS_SAME_LEVEL, columns)
+            kinships(base_obj, KINSHIPS_BRANCH_LEVEL_ONE, KINSHIPS_SAME_DEPTH, columns)
           end
 
           #
@@ -443,7 +443,7 @@ module StewEucen
           # @return [nil] No cousin nodes.
           # @since 1.1.0
           def cousins(base_obj, columns = nil)
-            kinships(base_obj, KINSHIPS_AS_COUSIN, KINSHIPS_SAME_LEVEL, columns)
+            kinships(base_obj, KINSHIPS_BRANCH_LEVEL_TWO, KINSHIPS_SAME_DEPTH, columns)
           end
 
           #
@@ -456,7 +456,7 @@ module StewEucen
           # @since 1.1.0
           #
           def piblings(base_obj, columns = nil)
-            kinships(base_obj, KINSHIPS_AS_COUSIN, KINSHIPS_PARENT_LEVEL, columns)
+            kinships(base_obj, KINSHIPS_BRANCH_LEVEL_TWO, KINSHIPS_PARENT_DEPTH, columns)
           end
 
           #
@@ -469,7 +469,7 @@ module StewEucen
           # @since 1.1.0
           #
           def niblings(base_obj, columns = nil)
-            kinships(base_obj, KINSHIPS_AS_SIBLING, KINSHIPS_CHILD_LEVEL, columns)
+            kinships(base_obj, KINSHIPS_BRANCH_LEVEL_ONE, KINSHIPS_CHILD_DEPTH, columns)
           end
 
           #
