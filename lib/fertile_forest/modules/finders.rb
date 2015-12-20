@@ -382,6 +382,8 @@ module StewEucen
             # Impossible to find.
             return nil if top_depth < ROOT_DEPTH
 
+            return nil if branch_level + depth_offset < 0
+
             ffqq = arel_table[@_ff_queue]
             ffdd = arel_table[@_ff_depth]
             ffgg = arel_table[@_ff_grove]
