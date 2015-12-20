@@ -411,6 +411,50 @@ module StewEucen
                 [after_nodes_subquery, QUEUE_MAX_VALUE]
             )
 
+            #
+            # create column of ff_branch_level
+            #
+            increment_branch_level_case = ff_create_case_expression(
+              [ffqq.eq(aim_queue).to_sql, 0],
+              1
+            )
+
+            branch_for_level_subqueries = [increment_branch_level_case]
+            ((top_depth + 1) .. (aim_depth - 1)).each do |d|
+              before_nodes_branch_for_lavel_subquery = ff_usual_projection(aim_grove)
+                  .project("#{ffqq.maximum.to_sql} AS head_queue_#{d}")
+                  .where(ffqq.lt(aim_queue))
+                  .where(ffdd.lteq(d))
+
+              after_nodes_branch_far_level_subquery = ff_usual_projection(aim_grove)
+                  .project("#{ffqq.minimum.to_sql} - 1 AS tail_queue_#{d}")
+                  .where(ffqq.gt(aim_queue))
+                  .where(ffdd.lteq(d))
+
+              before_condition = func_maker.new(
+                  'COALESCE',
+                  [before_nodes_branch_for_lavel_subquery, 0]
+              )
+              after_condition = func_maker.new(
+                  'COALESCE',
+                  [after_nodes_branch_far_level_subquery, QUEUE_MAX_VALUE]
+              )
+
+              branch_for_level_subqueries << ff_create_case_expression(
+                [ffqq.lt(before_condition).to_sql, 1],
+                [ffqq.gt(after_condition).to_sql, 1],
+                0
+              )
+            end
+
+            ff_branch_level = branch_for_level_subqueries.join(' + ') + " AS #{@_ff_branch_level}";
+
+            #
+            # create columns
+            #
+            base_columns = ff_all_optional_columns(columns);
+            base_columns << ff_branch_level
+
             # find nodes by ancestor queues
             ff_required_columns_scope()
                 .ff_usual_conditions_scope(aim_grove)
@@ -418,7 +462,29 @@ module StewEucen
                 .where(ffdd.eq(aim_depth + depth_offset))
                 .where(ffqq.gteq(before_coalesce_condition))
                 .where(ffqq.lteq(after_coalesce_condition))
-                .select(ff_all_optional_columns(columns))
+                .select(base_columns)
+          end
+
+          #
+          # create case Expression
+          # @param *cases [Array] Cases as:
+          #                      [[when, then], [when, then], ..., else]
+          #
+          def ff_create_case_expression(*cases)
+            when_hash = ['CASE']
+            cases.each do |the_case|
+              if the_case.instance_of?(Array)
+                when_hash << 'WHEN'
+                when_hash << the_case.shift
+                when_hash << 'THEN'
+                when_hash << the_case.shift
+              else
+                when_hash << "ELSE #{the_case}"
+              end
+            end
+            when_hash << 'END'
+
+            when_hash.join(' ')
           end
 
           #
@@ -897,7 +963,8 @@ module StewEucen
                     :ff_get_previous_queue,
                     :ff_queue_sorted_nodes,
 
-                    :ff_sort_with_queue!
+                    :ff_sort_with_queue!,
+                    :ff_create_case_expression
 
           alias superiors  ancestors
           alias forebears  ancestors

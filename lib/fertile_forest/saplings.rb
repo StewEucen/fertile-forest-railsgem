@@ -144,6 +144,7 @@ module StewEucen
               'ff_depth',
               'ff_queue',
               'ff_soft_delete',
+              'ff_branch_level',
             ]
 
             ff_required_columns.each do |key|
